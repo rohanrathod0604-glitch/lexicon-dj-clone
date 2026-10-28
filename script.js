@@ -51,6 +51,8 @@ const tracks = [
   }
 ];
 
+let selectedDeck = 'A';
+
 const deckState = {
   A: {
     track: tracks[0],
@@ -59,6 +61,7 @@ const deckState = {
     output: null,
     intervalId: null,
     step: 0,
+    progress: 0,
     startedAt: 0,
     cue: false
   },
@@ -69,6 +72,7 @@ const deckState = {
     output: null,
     intervalId: null,
     step: 0,
+    progress: 0,
     startedAt: 0,
     cue: false
   }
@@ -92,7 +96,16 @@ const els = {
   vinylA: document.getElementById('vinylA'),
   vinylB: document.getElementById('vinylB'),
   visualizerA: document.getElementById('visualizerA'),
-  visualizerB: document.getElementById('visualizerB')
+  visualizerB: document.getElementById('visualizerB'),
+  progressA: document.getElementById('progressA'),
+  progressB: document.getElementById('progressB'),
+  waveformA: document.getElementById('waveformA'),
+  waveformB: document.getElementById('waveformB'),
+  deckPanelA: document.getElementById('deckPanelA'),
+  deckPanelB: document.getElementById('deckPanelB'),
+  eqLow: document.getElementById('eqLow'),
+  eqMid: document.getElementById('eqMid'),
+  eqHigh: document.getElementById('eqHigh')
 };
 
 const audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -127,11 +140,17 @@ function initDeckOutput(deckKey) {
   return output;
 }
 
+function setSelectedDeck(deckKey) {
+  selectedDeck = deckKey;
+  els.deckPanelA.classList.toggle('selected', deckKey === 'A');
+  els.deckPanelB.classList.toggle('selected', deckKey === 'B');
+}
+
 function renderLibrary() {
   els.trackList.innerHTML = tracks
     .map(
       (track) => `
-        <button class="track-item ${deckState.A.track.id === track.id || deckState.B.track.id === track.id ? 'active' : ''}" data-track-id="${track.id}">
+        <button class="track-item ${deckState.A.track.id === track.id || deckState.B.track.id === track.id ? 'active' : ''}" data-track-id="${track.id}" draggable="true">
           <span class="track-art" style="background: linear-gradient(135deg, ${track.color}, ${track.accent});">${track.art}</span>
           <span class="track-main">
             <span class="track-name">${track.name}</span>
@@ -145,7 +164,26 @@ function renderLibrary() {
 
   document.querySelectorAll('.track-item').forEach((button) => {
     button.addEventListener('click', () => loadTrackToDeck(button.dataset.trackId));
+    button.addEventListener('dragstart', (event) => {
+      event.dataTransfer.setData('text/plain', button.dataset.trackId);
+    });
+    button.addEventListener('dragover', (event) => event.preventDefault());
+    button.addEventListener('drop', (event) => {
+      event.preventDefault();
+      const draggedTrackId = event.dataTransfer.getData('text/plain');
+      reorderTracks(draggedTrackId, button.dataset.trackId);
+    });
   });
+}
+
+function reorderTracks(fromId, toId) {
+  const fromIndex = tracks.findIndex((track) => track.id === fromId);
+  const toIndex = tracks.findIndex((track) => track.id === toId);
+  if (fromIndex === -1 || toIndex === -1 || fromIndex === toIndex) return;
+
+  const [removed] = tracks.splice(fromIndex, 1);
+  tracks.splice(toIndex, 0, removed);
+  renderLibrary();
 }
 
 function updateDeckLabels() {
@@ -159,13 +197,40 @@ function updateDeckLabels() {
   els.nowPlaying.textContent = deckState.A.isPlaying || deckState.B.isPlaying ? `${deckState.A.isPlaying ? deckState.A.track.name : deckState.B.track.name}` : 'Midnight Drive';
 }
 
+function formatTime(seconds) {
+  const safe = Math.max(0, Math.floor(seconds));
+  const mins = String(Math.floor(safe / 60)).padStart(2, '0');
+  const secs = String(safe % 60).padStart(2, '0');
+  return `${mins}:${secs}`;
+}
+
+function updateWaveform(deckKey) {
+  const deck = deckState[deckKey];
+  const waveform = deckKey === 'A' ? els.waveformA : els.waveformB;
+  const bars = waveform.querySelectorAll('span');
+  const active = deck.isPlaying ? 0.9 : 0.4;
+
+  bars.forEach((bar, index) => {
+    const v = deck.track.sequence[index % deck.track.sequence.length] / 380;
+    const value = Math.max(10, Math.min(100, v * 100));
+    const base = index % 2 === 0 ? value * 0.9 : value * 0.6;
+    bar.style.height = `${base}%`;
+    bar.style.opacity = `${active}`;
+  });
+
+  const progressDisplay = deckKey === 'A' ? els.progressA : els.progressB;
+  const totalSeconds = Math.max(1, (60 / deck.track.bpm) * 8 * 4);
+  deck.progress = Math.min(totalSeconds, deck.progress + (deck.isPlaying ? 0.1 : 0));
+  progressDisplay.textContent = formatTime(deck.progress);
+}
+
 function loadTrackToDeck(trackId) {
   const nextTrack = tracks.find((track) => track.id === trackId);
   if (!nextTrack) return;
 
-  const deckKey = deckState.A.isPlaying ? 'A' : deckState.B.isPlaying ? 'B' : 'A';
-  const targetDeck = deckState[deckKey];
+  const targetDeck = deckState[selectedDeck];
   targetDeck.track = nextTrack;
+  targetDeck.progress = 0;
 
   if (targetDeck.intervalId) {
     clearInterval(targetDeck.intervalId);
@@ -173,7 +238,7 @@ function loadTrackToDeck(trackId) {
   }
 
   if (targetDeck.isPlaying) {
-    startDeckLoop(deckKey);
+    startDeckLoop(selectedDeck);
   }
 
   updateDeckLabels();
@@ -227,12 +292,14 @@ function startDeckLoop(deckKey) {
     const freq = deck.track.sequence[deck.step % deck.track.sequence.length];
     playTone(deckKey, freq, 0.16);
     deck.step += 1;
+    deck.progress += loopMs / 1000;
   }, loopMs);
 }
 
 function toggleDeck(deckKey) {
   const deck = deckState[deckKey];
   deck.isPlaying = !deck.isPlaying;
+  setSelectedDeck(deckKey);
 
   if (deck.isPlaying) {
     initDeckOutput(deckKey);
@@ -252,6 +319,7 @@ function toggleDeck(deckKey) {
 function handleCue(deckKey) {
   const deck = deckState[deckKey];
   deck.step = 0;
+  deck.progress = 0;
   deck.cue = true;
   if (deck.intervalId) {
     clearInterval(deck.intervalId);
@@ -268,7 +336,8 @@ function syncDecks(deckKey) {
   const otherKey = deckKey === 'A' ? 'B' : 'A';
   const otherDeck = deckState[otherKey];
   if (otherDeck.isPlaying || deck.isPlaying) {
-    deck.track = otherDeck.track;
+    deck.track = { ...otherDeck.track };
+    deck.step = otherDeck.step;
     updateDeckLabels();
     renderLibrary();
   }
@@ -332,6 +401,19 @@ function updateVolumeControls() {
   const master = Number(els.masterVolume.value) / 100;
   masterGain.gain.value = master;
   els.masterLevelValue.textContent = `${Math.round(master * 100)}%`;
+
+  const eqLow = Number(els.eqLow.value) / 100;
+  const eqMid = Number(els.eqMid.value) / 100;
+  const eqHigh = Number(els.eqHigh.value) / 100;
+
+  if (deckState.A.output) {
+    deckState.A.output.filter.Q.value = 1 + eqMid * 12;
+    deckState.A.output.filter.frequency.value = 180 + eqLow * 5000;
+  }
+  if (deckState.B.output) {
+    deckState.B.output.filter.Q.value = 1 + eqHigh * 12;
+    deckState.B.output.filter.frequency.value = 220 + eqHigh * 6000;
+  }
 }
 
 function attachEvents() {
@@ -341,12 +423,15 @@ function attachEvents() {
       const action = button.dataset.action;
 
       if (action === 'play') {
+        setSelectedDeck(deckKey);
         toggleDeck(deckKey);
       }
       if (action === 'cue') {
+        setSelectedDeck(deckKey);
         handleCue(deckKey);
       }
       if (action === 'sync') {
+        setSelectedDeck(deckKey);
         syncDecks(deckKey);
       }
     });
@@ -357,78 +442,56 @@ function attachEvents() {
   els.masterVolume.addEventListener('input', updateVolumeControls);
   els.deckAVolume.addEventListener('input', updateVolumeControls);
   els.deckBVolume.addEventListener('input', updateVolumeControls);
+  els.eqLow.addEventListener('input', updateVolumeControls);
+  els.eqMid.addEventListener('input', updateVolumeControls);
+  els.eqHigh.addEventListener('input', updateVolumeControls);
+
+  document.addEventListener('keydown', (event) => {
+    const tag = event.target.tagName;
+    if (tag === 'INPUT') return;
+
+    if (event.code === 'Space') {
+      event.preventDefault();
+      toggleDeck(selectedDeck);
+    }
+
+    if (event.key.toLowerCase() === 'a') {
+      setSelectedDeck('A');
+    }
+
+    if (event.key.toLowerCase() === 'b') {
+      setSelectedDeck('B');
+    }
+
+    if (event.key === 'ArrowUp') {
+      const nextVolume = Math.min(100, Number(els.deckAVolume.value) + 5);
+      els.deckAVolume.value = nextVolume;
+      updateVolumeControls();
+    }
+
+    if (event.key === 'ArrowDown') {
+      const nextVolume = Math.max(0, Number(els.deckAVolume.value) - 5);
+      els.deckAVolume.value = nextVolume;
+      updateVolumeControls();
+    }
+  });
 }
 
 function animate() {
   updateVisualizer('A');
   updateVisualizer('B');
+  updateWaveform('A');
+  updateWaveform('B');
   requestAnimationFrame(animate);
 }
 
 function init() {
   renderLibrary();
   updateDeckLabels();
+  setSelectedDeck('A');
   attachEvents();
   updateVolumeControls();
   requestAnimationFrame(animate);
 }
 
 init();
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

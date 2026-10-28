@@ -24,7 +24,7 @@
       </header>
 
       <main class="studio-layout">
-        <section class="deck-panel deck-left" aria-label="Deck A">
+        <section class="deck-panel deck-left" id="deckPanelA" aria-label="Deck A">
           <div class="deck-header">
             <span class="deck-label">DECK A</span>
             <span class="deck-title" id="deckAName">Midnight Drive</span>
@@ -46,6 +46,19 @@
             <div>
               <span class="stat-label">KEY</span>
               <strong id="deckAKey">A MIN</strong>
+            </div>
+          </div>
+
+          <div class="waveform-block" aria-label="Deck A waveform">
+            <div class="track-progress">
+              <span>PLAYHEAD</span>
+              <strong id="progressA">00:00</strong>
+            </div>
+            <div class="waveform" id="waveformA">
+              <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+              <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+              <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+              <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
             </div>
           </div>
 
@@ -77,6 +90,24 @@
             <input id="masterVolume" type="range" min="0" max="100" value="78" />
           </div>
 
+          <div class="eq-panel">
+            <div class="eq-header">EQ</div>
+            <div class="eq-stack">
+              <label>
+                <span>LOW</span>
+                <input id="eqLow" type="range" min="0" max="100" value="60" />
+              </label>
+              <label>
+                <span>MID</span>
+                <input id="eqMid" type="range" min="0" max="100" value="55" />
+              </label>
+              <label>
+                <span>HIGH</span>
+                <input id="eqHigh" type="range" min="0" max="100" value="70" />
+              </label>
+            </div>
+          </div>
+
           <div class="volume-stack">
             <div class="volume-row">
               <span>DECK A</span>
@@ -93,7 +124,7 @@
           </div>
         </aside>
 
-        <section class="deck-panel deck-right" aria-label="Deck B">
+        <section class="deck-panel deck-right" id="deckPanelB" aria-label="Deck B">
           <div class="deck-header">
             <span class="deck-label">DECK B</span>
             <span class="deck-title" id="deckBName">Neon Pulse</span>
@@ -115,6 +146,19 @@
             <div>
               <span class="stat-label">KEY</span>
               <strong id="deckBKey">C# MIN</strong>
+            </div>
+          </div>
+
+          <div class="waveform-block" aria-label="Deck B waveform">
+            <div class="track-progress">
+              <span>PLAYHEAD</span>
+              <strong id="progressB">00:00</strong>
+            </div>
+            <div class="waveform" id="waveformB">
+              <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+              <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+              <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+              <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
             </div>
           </div>
 
@@ -141,7 +185,7 @@
         </div>
 
         <div class="library-grid">
-          <div class="track-list" id="trackList"></div>
+          <div class="track-list" id="trackList" aria-label="Track library"></div>
           <div class="mini-console">
             <div class="console-card">
               <span class="eyebrow">NOW PLAYING</span>
@@ -165,194 +209,3 @@
     <script src="script.js"></script>
   </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

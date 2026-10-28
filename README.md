@@ -26,6 +26,8 @@ Because this is a lightweight front-end prototype, you do not need a build step 
 - adjustable master, deck, and crossfader levels
 - animated visualizer and vinyl motion
 - track library with selectable loops
+- drag-and-drop queue reordering
+- keyboard shortcuts for deck selection and playback
 - generated synth-based audio using the Web Audio API
 
 ## Notes
