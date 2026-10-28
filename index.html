@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lexicon DJ Clone</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="brand" aria-label="Lexicon Home">
+          <div class="brand-mark">◈</div>
+          <div>
+            <div class="brand-name">LEXICON</div>
+            <div class="brand-sub">DJ SESSION</div>
+          </div>
+        </div>
+
+        <div class="session-pill">LIVE SESSION // <span id="tempoDisplay">128 BPM</span></div>
+      </header>
+
+      <main class="studio-layout">
+        <section class="deck-panel deck-left" aria-label="Deck A">
+          <div class="deck-header">
+            <span class="deck-label">DECK A</span>
+            <span class="deck-title" id="deckAName">Midnight Drive</span>
+          </div>
+
+          <div class="vinyl-container">
+            <div class="vinyl" id="vinylA">
+              <div class="vinyl-inner">
+                <span class="label">A</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="deck-stats">
+            <div>
+              <span class="stat-label">BPM</span>
+              <strong id="deckABpm">128</strong>
+            </div>
+            <div>
+              <span class="stat-label">KEY</span>
+              <strong id="deckAKey">A MIN</strong>
+            </div>
+          </div>
+
+          <div class="visualizer" id="visualizerA" aria-hidden="true">
+            <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+            <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+          </div>
+
+          <div class="deck-controls">
+            <button class="control-btn" data-deck="A" data-action="play">PLAY</button>
+            <button class="control-btn" data-deck="A" data-action="cue">CUE</button>
+            <button class="control-btn secondary" data-deck="A" data-action="sync">SYNC</button>
+          </div>
+        </section>
+
+        <aside class="mixer-panel" aria-label="Mixer panel">
+          <div class="mixer-glow"></div>
+
+          <div class="fader-box">
+            <span class="fader-label">CROSSFADER</span>
+            <input id="crossfader" type="range" min="0" max="100" value="50" />
+          </div>
+
+          <div class="master-box">
+            <div class="master-row">
+              <span>MASTER</span>
+              <span id="masterLevelValue">78%</span>
+            </div>
+            <input id="masterVolume" type="range" min="0" max="100" value="78" />
+          </div>
+
+          <div class="volume-stack">
+            <div class="volume-row">
+              <span>DECK A</span>
+              <input id="deckAVolume" type="range" min="0" max="100" value="82" />
+            </div>
+            <div class="volume-row">
+              <span>DECK B</span>
+              <input id="deckBVolume" type="range" min="0" max="100" value="88" />
+            </div>
+          </div>
+
+          <div class="mixer-actions">
+            <button id="syncBoth" class="sync-all">SYNC BOTH</button>
+          </div>
+        </aside>
+
+        <section class="deck-panel deck-right" aria-label="Deck B">
+          <div class="deck-header">
+            <span class="deck-label">DECK B</span>
+            <span class="deck-title" id="deckBName">Neon Pulse</span>
+          </div>
+
+          <div class="vinyl-container">
+            <div class="vinyl" id="vinylB">
+              <div class="vinyl-inner">
+                <span class="label">B</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="deck-stats">
+            <div>
+              <span class="stat-label">BPM</span>
+              <strong id="deckBBpm">132</strong>
+            </div>
+            <div>
+              <span class="stat-label">KEY</span>
+              <strong id="deckBKey">C# MIN</strong>
+            </div>
+          </div>
+
+          <div class="visualizer" id="visualizerB" aria-hidden="true">
+            <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+            <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+          </div>
+
+          <div class="deck-controls">
+            <button class="control-btn" data-deck="B" data-action="play">PLAY</button>
+            <button class="control-btn" data-deck="B" data-action="cue">CUE</button>
+            <button class="control-btn secondary" data-deck="B" data-action="sync">SYNC</button>
+          </div>
+        </section>
+      </main>
+
+      <section class="library-panel">
+        <div class="panel-header">
+          <div>
+            <span class="eyebrow">LIBRARY</span>
+            <h2>Track Queue</h2>
+          </div>
+          <div class="library-status">READY TO PLAY</div>
+        </div>
+
+        <div class="library-grid">
+          <div class="track-list" id="trackList"></div>
+          <div class="mini-console">
+            <div class="console-card">
+              <span class="eyebrow">NOW PLAYING</span>
+              <div class="now-playing" id="nowPlaying">Midnight Drive</div>
+            </div>
+
+            <div class="console-card">
+              <span class="eyebrow">MIX MODE</span>
+              <div class="mix-mode">BASS BOOST / WIDE STAGE</div>
+            </div>
+
+            <div class="console-card">
+              <span class="eyebrow">EFFECT</span>
+              <div class="effect-tag">DREAM DELAY</div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
